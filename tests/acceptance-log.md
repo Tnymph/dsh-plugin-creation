@@ -191,7 +191,7 @@
 | 校验器反例 | `... tests/fixtures/ppt-broken-notes` → `ok: false`，exit 1，error 为 `slide 2 notes must be a string of at least 60 chars (speaker notes are mandatory)` |
 | NEED_INPUT 形态 | `... tests/fixtures/ppt-need-input` → `ok: true`，exit 0；`status: NEED_INPUT`、`deckForbidden: true`、requests 非空 |
 | 红→绿记录 | 首次跑门禁时 `verify` 报 `ppt status enum drifted`（schema 的 run.status 用 `$ref` 指向 `$defs.status`，校验器未解引用）；`project.test` 两处断言失败（`/id: ppt-maker$/` 缺 `m`；run.status 同样是 `$ref`）。修复后 23/23 + 17/17 |
-| 未执行 | 两个 bundle 的安装、`ppt_maker` 冒烟、PP-1…PP-5 在线验收（需真实调用与 `dsh-ppt` 插件） |
+| 后续执行 | 安装与冒烟见下两节（APP-0、`ppt_maker` 冒烟均通过）；PP-1…PP-5 在线验收待执行 |
 
 ## 2026-10-23 · ppt-maker 安装（APP-0，已通过）
 
