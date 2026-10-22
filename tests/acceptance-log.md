@@ -178,7 +178,42 @@
 | `node scripts/build.mjs` | `EPERM ... open 'bundles\paper-patent-scout\cordis.patch.yml'`（errno -4048） | 沙箱拒绝写 `bundles/` | “生成物与人格不漂移”由 `verify.mjs` 的 `patches generated and in sync` 项校验；构建需在具备写权限的会话执行 |
 | `git status/diff` | `fatal: not a git repository` | 本目录未初始化 git | 改动核对以文件级清单与 `verify.mjs` 为准 |
 
-在**具备写权限的会话**（本会话，danger-full-access）中三条门禁均正常：`build.mjs` 写出 preset 206 行 + tool 16 行，`verify.mjs` 13/13，`node --test` 10/10。降级写法已写入 `docs/troubleshooting.md`。
+在**具备写权限的会话**（本会话，danger-full-access）中三条门禁均正常：`build.mjs` 写出 preset 206 行 + tool 16 行，`verify.mjs` 13/13，`node --test` 10/10。降级写法已写入 `docs/troubleshooting.md`。加入 `ppt-maker` 后，同一会话的最新门禁为：`build.mjs` 写出两个模式共 4 个 patch（206 + 16 + 225 + 16 行），`verify.mjs` 23/23，`node --test` 17/17。
+
+## 2026-10-23 · ppt-maker 离线门禁（v0.1，已通过）
+
+| 项 | 证据 |
+| --- | --- |
+| 生成 | `node scripts/build.mjs` → `bundles/ppt-maker/cordis.patch.yml`（225 行）+ `bundles/ppt-maker-tool/cordis.patch.yml`（16 行），与 `modes/ppt-maker/*.template.yml` 同步 |
+| 契约门禁 | `node scripts/verify.mjs` → `23/23 checks passed`（两个模式各 7 项 + 项目级 9 项；新增 ppt schema、ppt validator、两模式文档与示例检查） |
+| 测试 | `node --test` → `# tests 17 / # pass 17 / # fail 0`（新增 `check-ppt-output.test.mjs` 4 例 + `project.test.mjs` 中 ppt 契约 2 例） |
+| 校验器正例 | `node scripts/check-ppt-output.mjs tests/fixtures/ppt-valid` → `ok: true`，exit 0（2 页、1 个 provided 槽位、备注段 2） |
+| 校验器反例 | `... tests/fixtures/ppt-broken-notes` → `ok: false`，exit 1，error 为 `slide 2 notes must be a string of at least 60 chars (speaker notes are mandatory)` |
+| NEED_INPUT 形态 | `... tests/fixtures/ppt-need-input` → `ok: true`，exit 0；`status: NEED_INPUT`、`deckForbidden: true`、requests 非空 |
+| 红→绿记录 | 首次跑门禁时 `verify` 报 `ppt status enum drifted`（schema 的 run.status 用 `$ref` 指向 `$defs.status`，校验器未解引用）；`project.test` 两处断言失败（`/id: ppt-maker$/` 缺 `m`；run.status 同样是 `$ref`）。修复后 23/23 + 17/17 |
+| 未执行 | 两个 bundle 的安装、`ppt_maker` 冒烟、PP-1…PP-5 在线验收（需真实调用与 `dsh-ppt` 插件） |
+
+## 2026-10-23 · ppt-maker 安装（APP-0，已通过）
+
+| 步骤 | 真实返回 |
+| --- | --- |
+| 装 preset 包 | `plugin_manager install_bundle E:\VibeCoding\dshMaker\bundles\ppt-maker` → `stage: enable, target: dsh-ppt-maker, enabled: true, application: applied`；pnpm `+ dsh-ppt-maker 0.1.0 <- ...`；仅有与本项目无关的 `llm-deepseek-account` warning |
+| 装工具包 | `install_bundle ...\ppt-maker-tool` → `stage: enable, target: dsh-ppt-maker-tool, enabled: true, application: applied`；无 `Unknown agent preset` |
+| bundle 列表 | `list_bundles`（total 40）：`dsh-ppt-maker` 行 `preset-ppt-maker`（`@deepseek-ai/dsh-agent-preset`）、`dsh-ppt-maker-tool` 行 `ppt-maker`（`@deepseek-ai/dsh-tool-subagent`），均 installed/enabled |
+| profile 顺序 | `dsh.profile.bundles` 末六项为 `dsh-paper-patent-scout`、`dsh-paper-patent-scout-tool`、`dsh-ops`、`dsh-cost-meter`、`dsh-ppt-maker`、`dsh-ppt-maker-tool`（preset 在工具之前） |
+| 工具可见 | 新系统提示委派段为 `Start independent delegations with \`paper_patent_scout\` or \`ppt_maker\` or \`subagent\` or \`subagent_fork\`…` |
+
+## 2026-10-23 · `ppt_maker` 冒烟（真实调用，PARTIAL 合理）
+
+| 项 | 证据 |
+| --- | --- |
+| 调用 | 主代理直接调 `ppt_maker`（child `de7b13ca-12a3-4f59-aa3e-05ba2d0d77d4`），brief：3 页中文评审简介、听众评委、主题 `data`、素材仅限仓库文档、禁用生成图、`out/ppt-smoke/` |
+| 产出 | `out/ppt-smoke/`：`deck.pptx`（15623B）、`deck.html`（48242B）、`deck.json`（15971B）、`outline.md`、`notes.md`、`sources.md`、`assets/MANIFEST.md`、`run.json`、`REPORT.md` + `render/artifacts/document.pdf` 与 3 张 PNG |
+| 状态 | `REPORT.md` 首行与 `run.json.status` 均为 `PARTIAL`：第 2 页有 1 个 placeholder 图片槽位（brief 明确“无图片素材，用 placeholder”），未生成图、未用网络图；其余 9 文件齐全 |
+| 备注 | `deck.json` 3 页，`notes` 长度 167 / 342 / 285 字符，`notes.md` 3 段一致；`run.json.checks.ppt_check` = `0 error / 0 warning（revision 3，3 页）` |
+| 目检 | `ppt_render` 输出 PDF + 3 PNG；主代理查看第 1、3 页：标题/表格/页码正常，无溢出与错位 |
+| 机器校验 | `node scripts/check-ppt-output.mjs out/ppt-smoke` → `ok: true`，`status: PARTIAL`，`slides: 3`、`images_placeholder: 1`、`noteSections: 3`、`imageSlots: 1`，exit 0 |
+| 结论 | 工具链端到端可用；缺图片素材时按契约降级 `PARTIAL` 并给出替换路径，符合“图片必须可替换、不得自行生成”的约束 |
 
 ## 已知限制（如实记录）
 
@@ -186,3 +221,4 @@
 - 专利通道没有官方 API，靠 `web_search` + `read_page` 读 Google Patents 页面；`web_fetch` 对 patents.google.com 直接 `fetch failed`。
 - 受限沙箱会话无法执行 `node --test`（fork 限制）与 `build.mjs`（写 `bundles/` 限制），需在有写权限的会话跑完整门禁，或按 `docs/troubleshooting.md` 用替代命令取证。
 - 重启后长期可见性已验证一次（AC-3）；后续若手动删除 profile 中的 bundle 依赖，需要重新 `install_bundle`。
+- `ppt-maker` 依赖宿主 `dsh-ppt` 插件与 LibreOffice Kit（`ppt_render`）；缺失时状态降级为 `FAILED` / `PARTIAL`，不静默交付。

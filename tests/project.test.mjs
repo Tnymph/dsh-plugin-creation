@@ -129,6 +129,62 @@ test('contributing contract: PR accepted without SLA, gate and generated-artifac
   assert.ok(/无 SLA/.test(readme), 'README must state PR review has no SLA')
 })
 
+test('ppt-maker mode: judge default, mandatory notes, replaceable assets, no generated images', () => {
+  const persona = read('modes', 'ppt-maker', 'persona.md')
+  for (const needle of [
+    '不编造',
+    'NEED_INPUT',
+    '评委',
+    '讲者备注',
+    '可替换',
+    'assets/MANIFEST.md',
+    '禁止生成图片',
+    'sci_draw',
+    'ppt_create',
+    'ppt_check',
+    'ppt_render',
+    'deck.pptx',
+    'deck.json',
+    'HTML',
+    'STATUS',
+  ]) {
+    assert.ok(persona.includes(needle), `ppt persona missing: ${needle}`)
+  }
+  assert.ok(persona.length > 4500, 'ppt persona looks too thin to be a specialist prompt')
+  const toolPatch = read('bundles', 'ppt-maker-tool', 'cordis.patch.yml')
+  const presetPatch = read('bundles', 'ppt-maker', 'cordis.patch.yml')
+  assert.match(toolPatch, /toolName: ppt_maker/)
+  assert.match(toolPatch, /agentPreset: ppt-maker/)
+  assert.ok(!toolPatch.includes("name: '@deepseek-ai/dsh-agent-preset'"), 'tool bundle must not declare the preset')
+  assert.match(presetPatch, /id: ppt-maker$/m)
+  assert.ok(!presetPatch.includes("name: '@deepseek-ai/dsh-tool-subagent'"), 'preset bundle must not declare the tool')
+  const schema = JSON.parse(read('schema', 'ppt-output.schema.json'))
+  assert.ok(schema.$defs?.slide?.required?.includes('notes'), 'ppt schema must require slide notes')
+  const runStatus = schema.$defs?.run?.properties?.status ?? {}
+  const resolvedStatus = runStatus.$ref
+    ? schema.$defs[runStatus.$ref.replace('#/$defs/', '')]
+    : runStatus
+  assert.ok(
+    resolvedStatus.enum?.includes('NEED_INPUT'),
+    'ppt run status must include NEED_INPUT',
+  )
+})
+
+test('ppt output validator: valid deck passes, missing notes fails, NEED_INPUT forbids a half deck', async () => {
+  const { checkPptOutput } = await import('../scripts/check-ppt-output.mjs')
+  const fixtures = join(root, 'tests', 'fixtures')
+  const valid = checkPptOutput(join(fixtures, 'ppt-valid'))
+  assert.equal(valid.ok, true, `valid fixture failed: ${valid.errors.join('; ')}`)
+  assert.equal(valid.counts.slides, 2)
+  const broken = checkPptOutput(join(fixtures, 'ppt-broken-notes'))
+  assert.equal(broken.ok, false, 'fixture with missing slide notes must fail')
+  assert.ok(broken.errors.some((e) => /notes/.test(e)), `expected a notes error, got: ${broken.errors.join('; ')}`)
+  const needInput = checkPptOutput(join(fixtures, 'ppt-need-input'))
+  assert.equal(needInput.ok, true, `NEED_INPUT fixture failed: ${needInput.errors.join('; ')}`)
+  assert.equal(needInput.status, 'NEED_INPUT')
+  assert.equal(needInput.counts.slides, 0)
+})
+
 test('output schema is valid JSON with the record definitions we emit', () => {
   const schema = JSON.parse(read('schema', 'output.schema.json'))
   assert.ok(schema.$defs, 'schema needs $defs')

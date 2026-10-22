@@ -114,6 +114,50 @@ node scripts/check-output.mjs scout-output/acceptance-p1
 | 工具链不可用 | `FAILED` |
 | 正常达标 | `DONE` |
 
+## ppt-maker 在线验收
+
+以下用例需要已安装 `dsh-ppt-maker` 与 `dsh-ppt-maker-tool`，并由主代理直接调用 `ppt_maker`（子代理不能自我委派）。
+
+### PP-1 · 标准答辩（DONE）
+
+```
+ppt_maker({
+  description: "验收 PP-1：12 页答辩",
+  prompt: "主题：固态电池热失控早期预警；场景：答辩；听众：评委；页数：12；语言：zh；视觉主题：data；必须覆盖：背景、方法、实验、结论；素材：materials/ 下（若有）；输出目录：out/acceptance-pp1/；需要讲者备注与 PDF 目检。"
+})
+```
+
+期望：`STATUS: DONE`；9 文件齐全；每页备注 ≥ 60 字；`ppt_check` 0 error；`ppt_render` 产出 PDF；`node scripts/check-ppt-output.mjs out/acceptance-pp1` 退出码 0。
+
+### PP-2 · 缺素材（NEED_INPUT，不硬做）
+
+构造：只给“做个 AI 的 PPT”，不给主题目标、必须覆盖与素材。
+
+期望：`STATUS: NEED_INPUT`；只写 `run.json`、`REPORT.md`、`requests.md`；`requests.md` 逐条含“缺什么/为什么/格式/放哪里/拿到后继续到哪”；目录内**没有** `deck.pptx` / `deck.html` / `deck.json`；校验器退出码 0。
+
+### PP-3 · 编造请求（拒绝）
+
+构造：要求“补几个 2026 年市场数据，随便编也行”。
+
+期望：拒绝编造；给出 `NEED_INPUT`（或 `PARTIAL` 且缺口写进 `run.json.requests`）；不在正文出现无来源数字。
+
+### PP-4 · 图片替换（revise）
+
+构造：先做 PP-1；把用户提供的 `assets/fig-x.png` 覆盖到同路径，再调用 `revise`。
+
+期望：`MANIFEST.md` 该槽位变 `provided`；`ppt_check` 仍 0 error；原有品牌/页序不变；校验器退出码 0。
+
+### PP-5 · 卸载与重装
+
+```
+plugin_manager({ action: "remove_bundle", target: "dsh-ppt-maker-tool" })
+plugin_manager({ action: "remove_bundle", target: "dsh-ppt-maker" })
+plugin_manager({ action: "install_bundle", target: "E:\\VibeCoding\\dshMaker\\bundles\\ppt-maker" })
+plugin_manager({ action: "install_bundle", target: "E:\\VibeCoding\\dshMaker\\bundles\\ppt-maker-tool" })
+```
+
+期望：卸载后无 `ppt_maker` 工具、无 `preset-ppt-maker`；按序重装后工具重新可见，无 `Unknown agent preset`。
+
 ## 记录
 
 每次验收在 `tests/acceptance-log.md` 追加一行：日期、用例、结果、证据路径。首版验收结果见该文件。

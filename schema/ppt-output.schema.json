@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dsh-plugin-creation.local/schema/ppt-output.schema.json",
+  "title": "ppt-maker output records",
+  "description": "Contract for out/<slug>/ artifacts produced by the ppt-maker subagent. Run `node scripts/check-ppt-output.mjs out/<slug>` to validate an output directory.",
+  "$defs": {
+    "status": {
+      "type": "string",
+      "enum": ["DONE", "PARTIAL", "NEED_INPUT", "FAILED"]
+    },
+    "imageSlot": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "Lowercase kebab-case slot id; file lives at assets/<slot>.<ext>."
+    },
+    "slide": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "title", "notes"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "layout": {
+          "type": "string",
+          "enum": ["cover", "section", "bullets", "statement", "quote", "table", "closing", "image", "image-left", "image-right", "chart"]
+        },
+        "title": { "type": "string", "minLength": 1 },
+        "notes": {
+          "type": "string",
+          "minLength": 60,
+          "description": "Mandatory speaker notes; ppt-maker never ships a slide without them."
+        },
+        "image": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": true,
+              "required": ["slot", "src"],
+              "properties": {
+                "slot": { "$ref": "#/$defs/imageSlot" },
+                "src": {
+                  "type": "string",
+                  "pattern": "^assets/[a-z0-9][a-z0-9-]*\\.(png|jpe?g|webp|svg)$",
+                  "description": "Replaceable asset path; no data:, http(s): or absolute paths."
+                },
+                "alt": { "type": "string" },
+                "fit": { "type": "string", "enum": ["contain", "cover"] },
+                "caption": { "type": "string" }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "deck": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["theme", "slides"],
+      "properties": {
+        "theme": { "type": "string", "enum": ["swiss", "velvet", "data", "soft", "bold"] },
+        "brand": { "oneOf": [{ "type": "object" }, { "type": "null" }] },
+        "slides": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/slide" } }
+      }
+    },
+    "run": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "mission", "status", "audience", "language", "theme", "deck", "counts", "checks", "requests", "files", "limitations"
+      ],
+      "properties": {
+        "mission": { "type": "string", "minLength": 1 },
+        "status": { "$ref": "#/$defs/status" },
+        "audience": { "type": "string", "minLength": 1 },
+        "language": { "type": "string", "enum": ["zh", "en", "bilingual"] },
+        "theme": { "type": "string", "enum": ["swiss", "velvet", "data", "soft", "bold"] },
+        "deck": {
+          "type": "object",
+          "required": ["slug", "pages"],
+          "properties": {
+            "slug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+            "pages": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "counts": {
+          "type": "object",
+          "required": ["slides", "images_provided", "images_placeholder"],
+          "properties": {
+            "slides": { "type": "integer", "minimum": 0 },
+            "images_provided": { "type": "integer", "minimum": 0 },
+            "images_placeholder": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "checks": {
+          "type": "object",
+          "required": ["ppt_check", "render"],
+          "properties": {
+            "ppt_check": { "type": "string" },
+            "render": { "type": "string" }
+          }
+        },
+        "requests": { "type": "array", "items": { "type": "string" } },
+        "files": { "type": "array", "items": { "type": "string" } },
+        "limitations": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

@@ -99,6 +99,32 @@ AI4Scholar 没有专利数据源。实测结论：
 
 详见 `docs/retrieval-playbook.md`。
 
+## 模式二：ppt-maker（演示文稿）
+
+第二个模式的交付形态与 `paper-patent-scout` 完全同构：两个 bundle、按序安装、preset 定人格与工具子集、宿主级工具做委派入口。
+
+```
+bundle dsh-ppt-maker                        （第 1 个安装）
+└── insert: preset-ppt-maker                → @deepseek-ai/dsh-agent-preset
+      config.id: ppt-maker, order 21
+      plugins: persona / time-context / agent-instructions /
+               tool-fs / tool-fs-search / tool-web /
+               compaction group / tool-todo
+
+bundle dsh-ppt-maker-tool                   （第 2 个安装）
+└── insert: ppt-maker                       → @deepseek-ai/dsh-tool-subagent
+      config: provider spawn, toolName ppt_maker,
+              agentPreset ppt-maker, maxDepth 1
+```
+
+与检索模式的关键差异：
+
+- **不挂载生成器**：`dsh-ppt` 插件（`ppt_themes` / `ppt_templates` / `ppt_create` / `ppt_edit` / `ppt_check` / `ppt_render` / `ppt_undo`）是宿主级工具，preset 只是继承，不重复声明（与 AI4Scholar 同理）。子代理只负责人格、素材编排、检查与交付，不 fork 生成器。
+- **讲者备注是契约的一部分**：`deck.json` 每页 `notes` 必填且 ≥ 60 字符，`notes.md` 逐页一致；校验器 `scripts/check-ppt-output.mjs` 会拦。
+- **图片可替换、禁生成**：图片只从用户素材进入 `assets/`，`deck.json` 用 `assets/<slot>.<ext>` 引用，`assets/MANIFEST.md` 逐槽登记 `provided` / `placeholder`；`assets/` 出现未登记文件（例如 AI 生成图）会被校验器判为违规。缺图用占位槽位 + 页面文字标注，不硬造。
+- **缺素材即停**：关键素材缺失返回 `NEED_INPUT` + `requests.md`，**不生成 deck**；校验器会拒绝带 deck 的 `NEED_INPUT` 目录，防止“硬做”产出半成品。
+- **HTML 例外**：HTML 放映页允许 CSS/SVG 装饰（非事实图片），但需在 `sources.md` 说明；PPTX 的图片仍必须来自 `assets/`。
+
 ## 与"只做一个模板"的区别
 
 仓库分四层，模式只是最上面一层：

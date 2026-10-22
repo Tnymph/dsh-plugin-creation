@@ -1,0 +1,17 @@
+{
+  "name": "dsh-ppt-maker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DeepSeek Harness bundle 1/2: the ppt-maker Agent preset (presentation-building persona; relies on the host-level dsh-ppt tools). Install this before bundles/ppt-maker-tool.",
+  "license": "MIT",
+  "keywords": ["deepseek-harness", "dsh", "bundle", "preset", "subagent", "ppt", "slides", "presentation"],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "files": [
+    "cordis.patch.yml",
+    "README.md"
+  ]
+}

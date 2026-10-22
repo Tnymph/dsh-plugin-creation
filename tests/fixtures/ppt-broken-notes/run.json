@@ -1,0 +1,13 @@
+{
+  "mission": "答辩 PPT：固态电池热失控预警",
+  "status": "DONE",
+  "audience": "评委",
+  "language": "zh",
+  "theme": "data",
+  "deck": { "slug": "ppt-broken-notes", "pages": 2 },
+  "counts": { "slides": 2, "images_provided": 1, "images_placeholder": 0 },
+  "checks": { "ppt_check": "0error", "render": "pdf" },
+  "requests": [],
+  "files": ["deck.pptx", "deck.html", "deck.json", "outline.md", "notes.md", "sources.md", "assets/MANIFEST.md", "run.json", "REPORT.md"],
+  "limitations": []
+}

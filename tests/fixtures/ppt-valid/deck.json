@@ -1,0 +1,25 @@
+{
+  "revision": 1,
+  "theme": "data",
+  "brand": null,
+  "slides": [
+    {
+      "id": "slide-1",
+      "layout": "cover",
+      "title": "固态电池热失控预警",
+      "notes": "开场说明研究背景与目标：固态电池的热失控早期检测是储能安全的关键环节，本次汇报覆盖传感方案、特征提取、预警决策与实验结论，预计十二分钟，最后留三分钟回答评委提问。"
+    },
+    {
+      "id": "slide-2",
+      "layout": "image-right",
+      "title": "系统架构",
+      "notes": "这一页解释系统的三层结构：传感采集层、特征提取层、预警决策层；强调数据流方向与部署位置，评委可能追问采样频率与误报率，下一页给出实验数据。",
+      "image": {
+        "slot": "fig-architecture",
+        "src": "assets/fig-architecture.png",
+        "alt": "系统架构",
+        "fit": "contain"
+      }
+    }
+  ]
+}

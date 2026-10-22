@@ -16,11 +16,11 @@
 | `bundles/<mode>/cordis.patch.yml` | **生成物**，禁止手改 | `scripts/build.mjs` |
 | `bundles/<mode>/package.json` | bundle 清单（preset 包） | 人 |
 | `bundles/<mode>-tool/` | 工具包（清单 + 生成的 patch） | 人 / `scripts/build.mjs` |
-| `schema/` | 产出记录的结构定义 | 人 |
+| `schema/` | 产出记录的结构定义（当前：`output.schema.json` 检索、`ppt-output.schema.json` PPT） | 人 |
 | `specs/` | 每个模式的可验收 spec | 人 |
 | `docs/` | 架构、检索手册、安装、排障 | 人 |
-| `tests/` | 契约测试与在线验收用例/记录 | 人 |
-| `scripts/` | build / verify / new-mode | 人 |
+| `tests/` | 契约测试与在线验收用例/记录（两模式共享 `project.test.mjs`，校验器各有测试与夹具） | 人 |
+| `scripts/` | build / verify / check-output / check-ppt-output / new-mode | 人 |
 
 ## 必须遵守
 

@@ -1,0 +1,16 @@
+{
+  "mission": "答辩 PPT：固态电池热失控预警",
+  "status": "NEED_INPUT",
+  "audience": "评委",
+  "language": "zh",
+  "theme": "data",
+  "deck": { "slug": "ppt-need-input", "pages": 0 },
+  "counts": { "slides": 0, "images_provided": 0, "images_placeholder": 0 },
+  "checks": { "ppt_check": "not-run", "render": "none" },
+  "requests": [
+    "缺少实验数据 CSV：第 5 页的误报率曲线需要真实实验结果",
+    "缺少品牌 logo：封面与页脚需要用户提供的 logo 文件"
+  ],
+  "files": ["run.json", "REPORT.md", "requests.md"],
+  "limitations": ["未生成 deck：关键素材缺失"]
+}

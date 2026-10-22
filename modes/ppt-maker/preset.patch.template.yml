@@ -1,0 +1,59 @@
+# GENERATED FILE — edit modes/ppt-maker/persona.md or this template,
+# then run `node scripts/build.mjs`. Do not hand-edit
+# bundles/ppt-maker/cordis.patch.yml.
+#
+# Bundle 1 of 2: the `ppt-maker` Agent preset (persona + fs/web/compaction).
+# The dsh-ppt tools (ppt_themes / ppt_templates / ppt_create / ppt_edit /
+# ppt_check / ppt_render / ppt_undo) are mounted host-level by the `dsh-ppt`
+# plugin and inherited by every preset agent, so they are NOT re-mounted here.
+# Install bundles/ppt-maker BEFORE bundles/ppt-maker-tool: the host delegation
+# tool validates `agentPreset` while it loads and only sees presets declared by
+# an earlier patch transaction.
+- insert:
+    - id: preset-ppt-maker
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: ppt-maker
+        order: 21
+        plugins:
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              prefix: |
+{{PERSONA_BLOCK}}
+          - id: time-context
+            name: '@deepseek-ai/dsh-time-context'
+          - id: agent-instructions
+            name: '@deepseek-ai/dsh-agent-instructions'
+            config:
+              maxBytes: 8192
+          - id: tool-fs
+            name: '@deepseek-ai/dsh-tool-fs'
+          - id: tool-fs-search
+            name: '@deepseek-ai/dsh-tool-fs-search'
+            config:
+              sampleOverCapGlobResults: false
+          - id: tool-web
+            name: '@deepseek-ai/dsh-tool-web'
+            config:
+              fetch: true
+              searchTimeoutMs: 60000
+          - id: compaction
+            name: cordis:group
+            group: true
+            isolate:
+              compaction: true
+              toolResultPruner: true
+            config:
+              - id: compaction-basic
+                name: '@deepseek-ai/dsh-compaction-basic'
+              - id: tool-result-pruner
+                name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+                config:
+                  thresholdChars: 8192
+                  headChars: 4096
+                  tailChars: 1024
+          - id: tool-todo
+            name: '@deepseek-ai/dsh-tool-todo'
+            config:
+              allowParallelInProgress: true

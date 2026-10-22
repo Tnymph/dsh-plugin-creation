@@ -38,6 +38,20 @@
 | 没有 git 可看 diff | 本目录未初始化 git；改动核对用 `verify.mjs` + 文件级清单（`tests/acceptance-log.md` 记录） |
 | YAML 缩进错误导致插件不加载 | 用模板 + `build.mjs` 生成，不要手写 patch |
 
+## ppt-maker
+
+| 现象 | 原因 | 处置 |
+| --- | --- | --- |
+| 子代理回 `FAILED` 说工具不存在 | 宿主未启用 `dsh-ppt` 插件，`ppt_*` 工具缺失 | 在 `list_plugins` 确认 `dsh-ppt` 行 active；启用后重试 |
+| `ppt_check` 报溢字/表格超限/字号过小 | 页内容超出画布 | 拆页或删字；不要靠缩字号硬塞；修完重跑 `ppt_check` 与 `ppt_render` |
+| `ppt_render` 不可用/提示缺 LibreOffice Kit | 渲染引擎未安装 | 按 `ppt_render` 返回的安装指引处理；无法渲染时状态降为 `PARTIAL` 并写明“未目检” |
+| 某页没有讲者备注 | 生成时漏写 `notes` | 校验器 `check-ppt-output.mjs` 会报 `notes must be a string of at least 60 chars`；重写该页 `notes` 后重跑 |
+| `MANIFEST` 槽位是 placeholder 但文件已存在 | 用户已替换图片但没跑 revise | 调用 `ppt_maker` 的 `revise`，把该槽位改为 `provided` 并重新生成 |
+| `assets/` 出现未登记文件 | 可能是生成图/临时导出图 | 校验器会报 `not declared as a provided slot`；删除该文件，或经用户确认后补登记（不得是生成图） |
+| `NEED_INPUT` 却生成了 deck | 硬做，违反契约 | 校验器拒绝；删掉 deck 三件套，只保留 `run.json` / `REPORT.md` / `requests.md` |
+| 备注内容空泛（只写“讲这一页”） | 只满足长度没满足质量 | 备注四要素：讲什么、为什么讲、翻页提示、可能的追问；在线验收人工抽查 |
+| 升级 `dsh-ppt` 后校验器误报 | 插件内部 `deck.json` 结构变化 | 先跑 P1 冒烟，看真实 `deck.json` 字段，再同步 `schema/ppt-output.schema.json` 与校验器；不要为过闸删检查 |
+
 ## 回滚（反序）
 
 ```

@@ -1,0 +1,15 @@
+# GENERATED FILE — edit this template, then run `node scripts/build.mjs`.
+# Do not hand-edit bundles/ppt-maker-tool/cordis.patch.yml.
+#
+# Bundle 2 of 2: the host-level delegation tool `ppt_maker`.
+# It points at the `ppt-maker` Agent preset, so the preset bundle must already
+# be installed when this bundle is applied (`Unknown agent preset` otherwise).
+# See docs/install.md.
+- insert:
+    - id: ppt-maker
+      name: '@deepseek-ai/dsh-tool-subagent'
+      config:
+        provider: spawn
+        toolName: ppt_maker
+        agentPreset: ppt-maker
+        maxDepth: 1

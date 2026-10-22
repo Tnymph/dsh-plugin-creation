@@ -7,7 +7,7 @@
 > - 以 **MIT 许可、现状（AS IS）** 开放，欢迎 fork、复制、改造与二次发布。
 > - **接受 PR（无 SLA）**：欢迎外部贡献，但审核与合并不承诺时限；门禁、生成物与密钥规则见 [CONTRIBUTING.md](CONTRIBUTING.md)，讨论入口为 Issues / Discussions。
 
-为 DeepSeek Harness 制作**可安装、可复用**的专精子代理模式。当前首个模式：`paper-patent-scout`（论文 + 专利检索）。
+为 DeepSeek Harness 制作**可安装、可复用**的专精子代理模式。当前两个模式：`paper-patent-scout`（论文 + 专利检索）与 `ppt-maker`（演示文稿制作）。
 
 ## 为什么不是"一个模板"
 
@@ -36,6 +36,7 @@ DSH 的宿主级工具行（`@deepseek-ai/dsh-tool-subagent`）在**加载时**�
 | 模式 | preset / 工具 | 用途 | 状态 |
 | --- | --- | --- | --- |
 | paper-patent-scout | `paper-patent-scout` / `paper_patent_scout` | 论文与专利检索，产出证据台账（Markdown/JSON/CSV/BibTeX） | v0.3 已安装；P1/P2/P3/AC-7 在线验收通过（见 `tests/acceptance-log.md`） |
+| ppt-maker | `ppt-maker` / `ppt_maker` | 演示文稿制作：三件套（PPTX/HTML/JSON）+ 讲者备注 + 可替换图片槽位 | v0.1 已安装；冒烟 `out/ppt-smoke` 通过校验器（PARTIAL：1 个图片 placeholder）；PP-1…PP-5 待执行 |
 
 ## 快速开始
 
@@ -50,6 +51,12 @@ node --test                   # 结构测试
 
 ```powershell
 node scripts/check-output.mjs scout-output/<slug>/
+```
+
+PPT 模式用另一只校验器检查备注、状态一致性与图片槽位（`deck.json`、`assets/MANIFEST.md`）：
+
+```powershell
+node scripts/check-ppt-output.mjs out/<slug>/
 ```
 
 安装（在 DSH 会话中，**顺序不可颠倒**）：
@@ -70,6 +77,22 @@ paper_patent_scout({
 
 产出：`scout-output/hotel-robot/` 下 7 个文件（`evidence.md`、`papers.json`、`patents.json`、`candidates.csv`、`references.bib`、`run.json`、`search-log.md`），用 `node scripts/check-output.mjs scout-output/hotel-robot/` 校验一致性。详见 `modes/paper-patent-scout/output-contract.md`。
 
+演示文稿模式同样两个 bundle、同样顺序（前置条件：宿主已启用 `dsh-ppt` 插件）：
+
+```
+plugin_manager({ action: "install_bundle", target: "E:\\VibeCoding\\dshMaker\\bundles\\ppt-maker" })
+plugin_manager({ action: "install_bundle", target: "E:\\VibeCoding\\dshMaker\\bundles\\ppt-maker-tool" })
+```
+
+```
+ppt_maker({
+  description: "答辩 PPT：固态电池热失控预警",
+  prompt: "主题：固态电池热失控早期预警；场景：答辩；听众：评委；页数：12；语言：zh；视觉主题：data；必须覆盖：背景、方法、实验、结论；素材：materials/（若有）；输出目录：out/defense-thermal/；需要讲者备注与 PDF 目检。"
+})
+```
+
+产出 `out/defense-thermal/` 下 `deck.pptx`、`deck.html`、`deck.json`、`outline.md`、`notes.md`、`sources.md`、`assets/MANIFEST.md`、`run.json`、`REPORT.md`；缺关键素材时只写 `run.json`、`REPORT.md`、`requests.md` 并回 `NEED_INPUT`，不生成半成品。详见 `modes/ppt-maker/output-contract.md`。
+
 ## 目录结构
 
 ```
@@ -78,39 +101,52 @@ dshMaker/
 ├── 需求文档.md                    # 唯一需求来源
 ├── README.md
 ├── modes/
-│   └── paper-patent-scout/
-│       ├── persona.md                  # 子代理人格（源）
-│       ├── preset.patch.template.yml   # bundle 1 模板（含 {{PERSONA_BLOCK}}）
-│       ├── tool.patch.template.yml     # bundle 2 模板（工具行）
-│       └── output-contract.md          # 7 文件输出契约
+│   ├── paper-patent-scout/
+│   │   ├── persona.md                  # 子代理人格（源）
+│   │   ├── preset.patch.template.yml   # bundle 1 模板（含 {{PERSONA_BLOCK}}）
+│   │   ├── tool.patch.template.yml     # bundle 2 模板（工具行）
+│   │   └── output-contract.md          # 7 文件输出契约
+│   └── ppt-maker/
+│       ├── persona.md
+│       ├── preset.patch.template.yml
+│       ├── tool.patch.template.yml
+│       └── output-contract.md          # 9 文件契约 + MANIFEST 槽位规则
 ├── bundles/
 │   ├── paper-patent-scout/             # bundle 1/2：preset
 │   │   ├── package.json
 │   │   ├── cordis.patch.yml            # 生成物
 │   │   └── README.md
-│   └── paper-patent-scout-tool/        # bundle 2/2：宿主委派工具
-│       ├── package.json
-│       ├── cordis.patch.yml            # 生成物
-│       └── README.md
+│   ├── paper-patent-scout-tool/        # bundle 2/2：宿主委派工具
+│   │   ├── package.json
+│   │   ├── cordis.patch.yml            # 生成物
+│   │   └── README.md
+│   ├── ppt-maker/                      # 第二个模式的 preset 包
+│   └── ppt-maker-tool/                 # 第二个模式的工具包
 ├── templates/mode/               # 新模式脚手架（persona + 两个 patch 模板）
 ├── scripts/
-│   ├── build.mjs                 # persona → 两个 patch
-│   ├── verify.mjs                # 契约门禁
-│   ├── check-output.mjs          # 产物 7 文件一致性校验（S1）
+│   ├── build.mjs                 # persona → 两个 patch（多模式）
+│   ├── verify.mjs                # 契约门禁（多模式 + 项目级）
+│   ├── check-output.mjs          # 检索产物 7 文件一致性校验（S1）
+│   ├── check-ppt-output.mjs      # PPT 产物校验（备注/状态/MANIFEST）
 │   └── new-mode.mjs              # 脚手架生成器（含 -tool 包）
-├── schema/output.schema.json     # 产物记录 schema
-├── specs/paper-patent-scout.spec.md
+├── schema/
+│   ├── output.schema.json        # 检索产物 schema
+│   └── ppt-output.schema.json    # PPT 产物 schema
+├── specs/
+│   ├── paper-patent-scout.spec.md
+│   └── ppt-maker.spec.md
 ├── docs/
 │   ├── architecture.md           # 交付形态、数据流、决策
 │   ├── retrieval-playbook.md     # 检索 SOP 与工具现实
-│   ├── install.md                # 两 bundle 安装/验证/回退
+│   ├── install.md                # 两 bundle 安装/验证/回退（含 ppt）
 │   └── troubleshooting.md
-├── examples/                     # 三种调用示例
+├── examples/                     # 检索 + PPT 调用示例
 └── tests/
     ├── project.test.mjs          # 契约测试
-    ├── check-output.test.mjs     # 产物校验器测试
-    ├── fixtures/                 # 校验器夹具（合法/缺引用/缺字段三种）
-    ├── acceptance.md             # 在线验收用例 P1–P3/N1–N3/S1–S2
+    ├── check-output.test.mjs     # 检索产物校验器测试
+    ├── check-ppt-output.test.mjs # PPT 产物校验器测试
+    ├── fixtures/                 # 两类校验器夹具
+    ├── acceptance.md             # 在线验收用例 P1–P3/N1–N3/S1–S2 + PP-1—PP-5
     └── acceptance-log.md         # 验收记录
 ```
 
@@ -125,6 +161,10 @@ dshMaker/
 | 输出 7 个文件 | 人读（evidence.md）+ 机读（JSON/CSV）+ 引用（bib）+ 审计（run.json/search-log） |
 | 不声明 engines/peerDependencies | 本地目录安装的版本预检读取本清单，多余约束会挡安装 |
 | 免费专利通道 | 用户明确选择不接付费专利库；覆盖局限写进 `run.json` |
+| PPT 复用宿主 `dsh-ppt`，不造生成器 | 生成需要排版、图表、渲染引擎，重复造轮子只会更差；子代理的价值在编排、事实核对与目检 |
+| 讲者备注进 schema 而非"建议" | 备注是答辩/汇报的刚需；长度与逐页一致性可由校验器强制，避免"看起来有备注" |
+| 图片只从 `assets/` 来且必须登记 | 用户要求图片可替换、禁止 AI 生成；槽位 + MANIFEST 让替换是一次覆盖 + revise，生成图会被校验器拦下 |
+| 缺素材回 `NEED_INPUT` 且禁止 deck | 用户要求"不硬做"；校验器拒绝带 deck 的 `NEED_INPUT`，把纪律变成可执行的闸门 |
 
 ## 扩展新模式
 
@@ -145,11 +185,13 @@ node scripts/verify.mjs
 - 本机 AI4Scholar 未配置 API key 时，Semantic Scholar / PubMed / Google Scholar 不可用，模式降级为 arXiv + web 通道并标 `PARTIAL`（见 `docs/troubleshooting.md`）；
 - 在线验收（`tests/acceptance.md`）需要已安装的两个 bundle，离线门禁不覆盖真实检索质量；
 - 重启 DSH 后工具仍可见：已实测一次（AC-3，新进程仍出现 `paper_patent_scout`）；profile 中两个 bundle 的依赖不要手工删。
+- `ppt-maker` 依赖宿主 `dsh-ppt` 插件（`ppt_*` 工具）；插件被禁用时子代理回 `FAILED` 并说明，不会静默降级。`ppt_render` 需要 LibreOffice Kit，不可用时产物降为 `PARTIAL`（未目检）。
 
 ## 验收状态
 
-- 离线：`node scripts/verify.mjs`（13/13）、`node --test`（10/10）—— 见 `tests/acceptance-log.md`。
-- 在线：P1 酒店服务机器人（8 篇 + 3 件）、P2 Attention Is All You Need 核验、P3 配送机器人电梯协同（3 件）、AC-7 空主题 `NEED_INPUT`、专利专项 `ssb-patents`（5 件，含 3 件授权 Active）均由真实 `paper_patent_scout` 调用完成，`check-output.mjs` 全部 `ok: true`；主代理另做了外部源抽查（arXiv 标题/DOI、Google Patents 原文）。
+- 离线：`node scripts/verify.mjs`（23/23）、`node --test`（17/17）—— 见 `tests/acceptance-log.md`。两个模式各 7 项结构检查 + 9 项项目级检查（含 PPT 产物校验器正/反例）。
+- 在线（模式一）：P1 酒店服务机器人（8 篇 + 3 件）、P2 Attention Is All You Need 核验、P3 配送机器人电梯协同（3 件）、AC-7 空主题 `NEED_INPUT`、专利专项 `ssb-patents`（5 件，含 3 件授权 Active）均由真实 `paper_patent_scout` 调用完成，`check-output.mjs` 全部 `ok: true`；主代理另做了外部源抽查（arXiv 标题/DOI、Google Patents 原文）。
+- 在线（模式二）：已安装 `dsh-ppt-maker` + `dsh-ppt-maker-tool`；`ppt_maker` 冒烟生成 `out/ppt-smoke`（3 页、备注 167/342/285 字、`ppt_check` 0 error、PDF+PNG 目检、1 个图片 placeholder → `PARTIAL`），`check-ppt-output.mjs` 退出码 0；PP-1…PP-5 待执行。
 - 已执行：AC-9 反序卸载与按序重装、AC-3 重启后工具目录复检（均通过，证据见 `tests/acceptance-log.md`）。
 - 受限沙箱会话无法执行 `node --test`（spawn 限制）与 `build.mjs`（写 `bundles/` 限制），降级取证方式见 `docs/troubleshooting.md`。
 

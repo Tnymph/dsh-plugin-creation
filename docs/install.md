@@ -102,6 +102,36 @@ plugin_manager({ action: "remove_bundle", target: "dsh-paper-patent-scout" })
 
 先卸工具包，避免工具行指向已消失的 preset。卸载后 `paper_patent_scout` 工具与 `paper-patent-scout` preset 一并消失，profile 恢复到安装前状态。产物目录 `scout-output/` 不受影响，可手动保留或删除。
 
+## 9. 第二个模式：ppt-maker（同一套顺序）
+
+`ppt-maker` 与检索模式同构，也拆成两个 bundle。**前提**：宿主已启用 `dsh-ppt` 插件（`ppt_*` 工具）。安装顺序同样是 preset → tool：
+
+```
+plugin_manager({ action: "install_bundle", target: "E:\\VibeCoding\\dshMaker\\bundles\\ppt-maker" })
+plugin_manager({ action: "install_bundle", target: "E:\\VibeCoding\\dshMaker\\bundles\\ppt-maker-tool" })
+```
+
+期望：`list_bundles` 含 `dsh-ppt-maker` 与 `dsh-ppt-maker-tool`；`list_plugins` 中 `preset-ppt-maker` 与 `ppt-maker` active；新会话工具目录出现 `ppt_maker`；没有 `Unknown agent preset`。
+
+反序会报 `Unknown agent preset: ppt-maker`；卸载时先卸 `dsh-ppt-maker-tool`，再卸 `dsh-ppt-maker`。
+
+冒烟调用（缺素材时应回 `NEED_INPUT`，有素材时生成三件套）：
+
+```
+ppt_maker({
+  description: "smoke: 3 页答辩 PPT",
+  prompt: "主题：固态电池热失控预警；场景：答辩；听众：评委；页数：3；语言：zh；必须覆盖：背景、方法、结论；素材：无；输出目录：out/ppt-smoke/；需要讲者备注与 PDF 目检。"
+})
+```
+
+期望：缺素材时只写 `run.json`、`REPORT.md`、`requests.md`，返回 `STATUS: NEED_INPUT`；有素材时 `out/ppt-smoke/` 满足 9 文件契约，且
+
+```
+node scripts/check-ppt-output.mjs out/ppt-smoke
+```
+
+退出码 0（备注、状态一致性、MANIFEST 槽位、assets 未登记文件都会被检查）。
+
 ## 8. 安全检查清单
 
 - [ ] 两个 `cordis.patch.yml` 与 `scripts/build.mjs` 输出一致（`verify.mjs` 会拦）
