@@ -2,7 +2,7 @@
 
 > **项目状态（请先读）**
 >
-> - 本仓库（GitHub 名：`dsh插件创作`）主要由 **DeepSeek 模型接管创作**：需求澄清之后的设计、实现、测试与验收记录由 AI 完成，人工只做需求决策与结果确认。
+> - 本仓库（中文项目名：**dsh插件创作**；GitHub 仓库名：`dsh-plugin-creation`，仓库名只能用 ASCII，中文名见描述与本行）主要由 **DeepSeek 模型接管创作**：需求澄清之后的设计、实现、测试与验收记录由 AI 完成，人工只做需求决策与结果确认。
 > - 作者**不具备持续更新与维护能力**：不承诺后续功能演进、兼容性跟进或问题修复；如 DSH 版本升级导致不可用，请自行调整或提 PR。
 > - 以 **MIT 许可、现状（AS IS）** 开放，欢迎 fork、复制、改造与二次发布。
 
@@ -148,7 +148,20 @@ node scripts/verify.mjs
 ## 验收状态
 
 - 离线：`node scripts/verify.mjs`（13/13）、`node --test`（10/10）—— 见 `tests/acceptance-log.md`。
-- 在线：P1 酒店服务机器人（8 篇 + 3 件）、P2 Attention Is All You Need 核验、P3 配送机器人电梯协同（3 件）、AC-7 空主题 `NEED_INPUT` 均由真实 `paper_patent_scout` 调用完成，`check-output.mjs` 全部 `ok: true`；主代理另做了外部源抽查。
 - 在线：P1 酒店服务机器人（8 篇 + 3 件）、P2 Attention Is All You Need 核验、P3 配送机器人电梯协同（3 件）、AC-7 空主题 `NEED_INPUT`、专利专项 `ssb-patents`（5 件，含 3 件授权 Active）均由真实 `paper_patent_scout` 调用完成，`check-output.mjs` 全部 `ok: true`；主代理另做了外部源抽查（arXiv 标题/DOI、Google Patents 原文）。
 - 已执行：AC-9 反序卸载与按序重装、AC-3 重启后工具目录复检（均通过，证据见 `tests/acceptance-log.md`）。
 - 受限沙箱会话无法执行 `node --test`（spawn 限制）与 `build.mjs`（写 `bundles/` 限制），降级取证方式见 `docs/troubleshooting.md`。
+
+## 维护与推送（维护者本机环境相关）
+
+- 本仓库**不承诺持续更新**；DSH 版本升级后若出现新的加载/校验错误，先查 `docs/troubleshooting.md`，再改 `modes/`→`bundles/`→文档。
+- 本机 `~/.gitconfig` 把 `https://github.com/` 与 `git@github.com:` 重写到镜像代理 `https://ghfast.top/...`，直接 `git push` 会回落到交互式凭证并失败。因此 `origin` 固定为显式端口的 `https://github.com:443/Tnymph/dsh-plugin-creation.git`（不匹配 `insteadOf` 前缀，从而绕过改写）。
+- 推送时用 `gh` 的令牌走一次性 HTTP 头，令牌不写入 `.git/config` 或任何仓库文件：
+
+```powershell
+$t = gh auth token
+$b64 = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$t"))
+git -c "http.https://github.com:443/.extraheader=AUTHORIZATION: basic $b64" push
+```
+
+- 若在另一台机器/正常网络克隆本仓库，直接 `git clone https://github.com/Tnymph/dsh-plugin-creation.git` 即可，无需上述绕行。
