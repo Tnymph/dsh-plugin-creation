@@ -1,0 +1,17 @@
+{
+  "name": "dsh-paper-patent-scout",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DeepSeek Harness bundle 1/2: the paper-patent-scout Agent preset (paper & patent retrieval persona). Install this before bundles/paper-patent-scout-tool.",
+  "license": "MIT",
+  "keywords": ["deepseek-harness", "dsh", "bundle", "preset", "subagent", "paper", "patent", "retrieval"],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "files": [
+    "cordis.patch.yml",
+    "README.md"
+  ]
+}

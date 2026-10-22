@@ -1,0 +1,56 @@
+# GENERATED FILE — edit modes/paper-patent-scout/persona.md or this template,
+# then run `node scripts/build.mjs`. Do not hand-edit
+# bundles/paper-patent-scout/cordis.patch.yml.
+#
+# Bundle 1 of 2: the Agent preset (persona + minimal tool set + compaction).
+# Install bundles/paper-patent-scout BEFORE bundles/paper-patent-scout-tool:
+# the host delegation tool validates `agentPreset` while it loads and only sees
+# presets declared by an earlier patch transaction.
+- insert:
+    - id: preset-paper-patent-scout
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: paper-patent-scout
+        order: 20
+        plugins:
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              prefix: |
+{{PERSONA_BLOCK}}
+          - id: time-context
+            name: '@deepseek-ai/dsh-time-context'
+          - id: agent-instructions
+            name: '@deepseek-ai/dsh-agent-instructions'
+            config:
+              maxBytes: 8192
+          - id: tool-fs
+            name: '@deepseek-ai/dsh-tool-fs'
+          - id: tool-fs-search
+            name: '@deepseek-ai/dsh-tool-fs-search'
+            config:
+              sampleOverCapGlobResults: false
+          - id: tool-web
+            name: '@deepseek-ai/dsh-tool-web'
+            config:
+              fetch: true
+              searchTimeoutMs: 60000
+          - id: compaction
+            name: cordis:group
+            group: true
+            isolate:
+              compaction: true
+              toolResultPruner: true
+            config:
+              - id: compaction-basic
+                name: '@deepseek-ai/dsh-compaction-basic'
+              - id: tool-result-pruner
+                name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+                config:
+                  thresholdChars: 8192
+                  headChars: 4096
+                  tailChars: 1024
+          - id: tool-todo
+            name: '@deepseek-ai/dsh-tool-todo'
+            config:
+              allowParallelInProgress: true

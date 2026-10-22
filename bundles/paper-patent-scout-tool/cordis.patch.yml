@@ -1,0 +1,15 @@
+# GENERATED FILE — edit this template, then run `node scripts/build.mjs`.
+# Do not hand-edit bundles/paper-patent-scout-tool/cordis.patch.yml.
+#
+# Bundle 2 of 2: the host-level delegation tool `paper_patent_scout`.
+# It points at the `paper-patent-scout` Agent preset, so the preset bundle must
+# already be installed when this bundle is applied (`Unknown agent preset`
+# otherwise). See docs/install.md.
+- insert:
+    - id: paper-patent-scout
+      name: '@deepseek-ai/dsh-tool-subagent'
+      config:
+        provider: spawn
+        toolName: paper_patent_scout
+        agentPreset: paper-patent-scout
+        maxDepth: 1

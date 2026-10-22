@@ -1,0 +1,46 @@
+# GENERATED FILE — edit modes/{{MODE_ID}}/persona.md or this template,
+# then run `node scripts/build.mjs`. Do not hand-edit
+# bundles/{{MODE_ID}}/cordis.patch.yml.
+#
+# Bundle 1 of 2: the Agent preset (persona + tool subset).
+# Install bundles/{{MODE_ID}} BEFORE bundles/{{MODE_ID}}-tool: the host tool row
+# validates `agentPreset` while it loads and only sees presets declared by an
+# earlier patch transaction.
+- insert:
+    - id: preset-{{MODE_ID}}
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: {{MODE_ID}}
+        order: {{ORDER}}
+        plugins:
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              prefix: |
+{{PERSONA_BLOCK}}
+          - id: time-context
+            name: '@deepseek-ai/dsh-time-context'
+          - id: tool-fs
+            name: '@deepseek-ai/dsh-tool-fs'
+          - id: tool-fs-search
+            name: '@deepseek-ai/dsh-tool-fs-search'
+          - id: tool-web
+            name: '@deepseek-ai/dsh-tool-web'
+            config:
+              fetch: true
+              searchTimeoutMs: 60000
+          - id: compaction
+            name: cordis:group
+            group: true
+            isolate:
+              compaction: true
+              toolResultPruner: true
+            config:
+              - id: compaction-basic
+                name: '@deepseek-ai/dsh-compaction-basic'
+              - id: tool-result-pruner
+                name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+                config:
+                  thresholdChars: 8192
+                  headChars: 4096
+                  tailChars: 1024

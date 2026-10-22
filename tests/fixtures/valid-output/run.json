@@ -1,0 +1,31 @@
+{
+  "type": "run",
+  "mission": {
+    "topic": "fixture topic",
+    "types": "paper",
+    "time_range": null,
+    "jurisdictions": null,
+    "max_results": 1,
+    "output_dir": "tests/fixtures/valid-output",
+    "output_language": "zh",
+    "known_items": null,
+    "constraints": null
+  },
+  "status": "DONE",
+  "started_at": "2026-10-21T00:00:00+08:00",
+  "finished_at": "2026-10-21T00:05:00+08:00",
+  "queries": { "papers": ["fixture query"], "patents": [], "web": [] },
+  "counts": { "found": 1, "included": 1, "excluded_duplicate": 0, "excluded_irrelevant": 0 },
+  "coverage": ["fixture only"],
+  "limitations": ["fixture data, not a retrieval result"],
+  "credits_spent": null,
+  "files": [
+    "evidence.md",
+    "papers.json",
+    "patents.json",
+    "candidates.csv",
+    "references.bib",
+    "run.json",
+    "search-log.md"
+  ]
+}

@@ -1,0 +1,17 @@
+[
+  {
+    "id": "P01",
+    "type": "paper",
+    "title": "Example Paper for Validator",
+    "authors": [
+      "Ada Example"
+    ],
+    "year": 2024,
+    "venue": null,
+    "url": "https://example.org/fixture-p01",
+    "abstract": "Fixture abstract used to exercise the output validator.",
+    "relevance": 4,
+    "evidence_level": "A",
+    "key_findings": "Fixture only; no retrieval was performed."
+  }
+]

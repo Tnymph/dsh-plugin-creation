@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.dsh/presets/paper-patent-scout/output.schema.json",
+  "title": "paper-patent-scout output records",
+  "description": "Structured records emitted by the paper-patent-scout subagent: papers.json, patents.json and run.json. Field names are fixed; missing values are null and must be explained in notes/limitations.",
+  "$defs": {
+    "paper": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "abstract",
+        "authors",
+        "doi",
+        "evidence_level",
+        "id",
+        "key_findings",
+        "relevance",
+        "title",
+        "type",
+        "url",
+        "year"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^P[0-9]{2,3}$", "description": "Stable record id, P01, P02 … used in evidence.md and references.bib" },
+        "type": { "const": "paper" },
+        "title": { "type": "string", "minLength": 1 },
+        "title_original": { "type": ["string", "null"], "description": "Original-language title when the reported title is translated" },
+        "authors": { "type": "array", "items": { "type": "string" } },
+        "year": { "type": "integer", "minimum": 1900, "maximum": 2100 },
+        "venue": { "type": ["string", "null"], "description": "Journal or conference as returned by the source" },
+        "publisher": { "type": ["string", "null"] },
+        "doi": { "type": ["string", "null"], "description": "null when no DOI was returned; never reconstructed" },
+        "arxiv_id": { "type": ["string", "null"] },
+        "pmid": { "type": ["string", "null"] },
+        "url": { "type": "string", "format": "uri", "description": "Clickable evidence URL for this record" },
+        "pdf_url": { "type": ["string", "null"] },
+        "abstract": { "type": ["string", "null"], "description": "Abstract text or null when the source returned none" },
+        "language": { "type": ["string", "null"], "description": "ISO 639-1 code when known" },
+        "publication_status": {
+          "type": "string",
+          "enum": ["published", "preprint", "in-press", "unknown"],
+          "default": "unknown"
+        },
+        "relevance": { "type": "integer", "minimum": 0, "maximum": 5 },
+        "evidence_level": { "type": "string", "enum": ["A", "B", "C"] },
+        "key_findings": { "type": "string", "minLength": 1, "description": "≤2 sentences; cite the field they come from (abstract, section, claim)" },
+        "matched_terms": { "type": "array", "items": { "type": "string" } },
+        "notes": { "type": ["string", "null"], "description": "Why a field is null, version merge notes, uncertainty" }
+      }
+    },
+    "patent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assignee",
+        "evidence_level",
+        "id",
+        "key_findings",
+        "patent_number",
+        "relevance",
+        "title",
+        "type",
+        "url"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^PAT[0-9]{2,3}$", "description": "Stable record id, PAT01, PAT02 …" },
+        "type": { "const": "patent" },
+        "patent_number": { "type": "string", "minLength": 3, "description": "Publication number as printed on the source page, e.g. US11887367B1, CN115123456A" },
+        "jurisdiction": { "type": ["string", "null"], "description": "Office: CN, US, EP, WO, JP …" },
+        "title": { "type": "string", "minLength": 1 },
+        "assignee": { "type": "array", "items": { "type": "string" }, "description": "Current assignee / applicant as returned by the source" },
+        "inventors": { "type": "array", "items": { "type": "string" } },
+        "priority_date": { "type": ["string", "null"], "description": "YYYY-MM-DD when available" },
+        "filing_date": { "type": ["string", "null"] },
+        "publication_date": { "type": ["string", "null"] },
+        "legal_status": { "type": ["string", "null"], "description": "e.g. Active, Expired, Pending; verbatim from the source" },
+        "cpc": { "type": "array", "items": { "type": "string" } },
+        "ipc": { "type": "array", "items": { "type": "string" } },
+        "url": { "type": "string", "format": "uri" },
+        "abstract": { "type": ["string", "null"] },
+        "relevance": { "type": "integer", "minimum": 0, "maximum": 5 },
+        "evidence_level": { "type": "string", "enum": ["A", "B", "C"] },
+        "key_findings": { "type": "string", "minLength": 1 },
+        "family_id": { "type": ["string", "null"], "description": "Shared id for publications treated as one family, e.g. US11887367" },
+        "notes": { "type": ["string", "null"] }
+      }
+    },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mission",
+        "status",
+        "started_at",
+        "finished_at",
+        "queries",
+        "counts",
+        "limitations",
+        "files"
+      ],
+      "properties": {
+        "type": { "const": "run" },
+        "mission": {
+          "type": "object",
+          "required": ["topic"],
+          "properties": {
+            "topic": { "type": "string" },
+            "types": { "type": "string", "enum": ["paper", "patent", "both"] },
+            "time_range": { "type": ["string", "null"] },
+            "jurisdictions": { "type": ["array", "null"], "items": { "type": "string" } },
+            "max_results": { "type": ["integer", "null"] },
+            "output_dir": { "type": "string" },
+            "output_language": { "type": ["string", "null"] },
+            "known_items": { "type": ["array", "null"], "items": { "type": "string" } },
+            "constraints": { "type": ["array", "null"], "items": { "type": "string" } }
+          }
+        },
+        "status": { "type": "string", "enum": ["DONE", "PARTIAL", "INSUFFICIENT", "NEED_INPUT", "FAILED"] },
+        "started_at": { "type": "string", "format": "date-time" },
+        "finished_at": { "type": "string", "format": "date-time" },
+        "queries": {
+          "type": "object",
+          "properties": {
+            "papers": { "type": "array", "items": { "type": "string" } },
+            "patents": { "type": "array", "items": { "type": "string" } },
+            "web": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["found", "included", "excluded_duplicate", "excluded_irrelevant"],
+          "properties": {
+            "found": { "type": "integer", "minimum": 0 },
+            "included": { "type": "integer", "minimum": 0 },
+            "excluded_duplicate": { "type": "integer", "minimum": 0 },
+            "excluded_irrelevant": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "coverage": { "type": "array", "items": { "type": "string" }, "description": "What the sweep did and did not cover" },
+        "limitations": { "type": "array", "items": { "type": "string" } },
+        "credits_spent": { "type": ["string", "null"] },
+        "files": { "type": "array", "items": { "type": "string" }, "description": "Workspace-relative paths of every emitted file" }
+      }
+    }
+  }
+}

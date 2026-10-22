@@ -1,0 +1,23 @@
+{
+  "name": "dsh-paper-patent-scout-tool",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DeepSeek Harness bundle: the host delegation tool paper_patent_scout, bound to the paper-patent-scout Agent preset. Install bundles/paper-patent-scout first.",
+  "license": "MIT",
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "bundle",
+    "subagent",
+    "tool"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "files": [
+    "cordis.patch.yml",
+    "README.md"
+  ]
+}

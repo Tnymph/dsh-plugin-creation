@@ -1,0 +1,14 @@
+# GENERATED FILE — edit this template, then run `node scripts/build.mjs`.
+# Do not hand-edit bundles/{{MODE_ID}}-tool/cordis.patch.yml.
+#
+# Bundle 2 of 2: the host-level delegation tool {{TOOL_NAME}}.
+# It points at the {{MODE_ID}} Agent preset, so bundles/{{MODE_ID}} must already
+# be installed when this bundle is applied.
+- insert:
+    - id: {{MODE_ID}}
+      name: '@deepseek-ai/dsh-tool-subagent'
+      config:
+        provider: spawn
+        toolName: {{TOOL_NAME}}
+        agentPreset: {{MODE_ID}}
+        maxDepth: 1
