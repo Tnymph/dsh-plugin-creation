@@ -156,13 +156,14 @@ node scripts/verify.mjs
 ## 维护与推送（维护者本机环境相关）
 
 - 本仓库**不承诺持续更新**；DSH 版本升级后若出现新的加载/校验错误，先查 `docs/troubleshooting.md`，再改 `modes/`→`bundles/`→文档。
-- 本机 `~/.gitconfig` 把 `https://github.com/` 与 `git@github.com:` 重写到镜像代理 `https://ghfast.top/...`，直接 `git push` 会回落到交互式凭证并失败。因此 `origin` 固定为显式端口的 `https://github.com:443/Tnymph/dsh-plugin-creation.git`（不匹配 `insteadOf` 前缀，从而绕过改写）。
-- 推送时用 `gh` 的令牌走一次性 HTTP 头，令牌不写入 `.git/config` 或任何仓库文件：
+- 本机 `~/.gitconfig` 把 `https://github.com/` 与 `git@github.com:` 重写到镜像代理 `https://ghfast.top/...`；同时本网络对 `github.com:443` 的直连会超时。因此 `origin` 设为代理地址 `https://ghfast.top/https://github.com/Tnymph/dsh-plugin-creation.git`（读取匿名可用）。
+- 推送需要认证，用 `gh` 的令牌走一次性 HTTP 头；令牌不写入 `.git/config` 或任何仓库文件：
 
 ```powershell
 $t = gh auth token
 $b64 = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$t"))
-git -c "http.https://github.com:443/.extraheader=AUTHORIZATION: basic $b64" push
+git -c "http.https://ghfast.top/.extraheader=AUTHORIZATION: basic $b64" push
 ```
 
+- 若直连 GitHub 可用（或不在镜像环境），也可以把 `origin` 换回 `https://github.com/Tnymph/dsh-plugin-creation.git` 后正常 `git push`。
 - 若在另一台机器/正常网络克隆本仓库，直接 `git clone https://github.com/Tnymph/dsh-plugin-creation.git` 即可，无需上述绕行。
