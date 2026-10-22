@@ -51,6 +51,8 @@ export const REQUIRED_FILES = [
   'tests/fixtures/broken-output/references.bib',
   'tests/fixtures/missing-field-output/papers.json',
   '.gitignore',
+  'CONTRIBUTING.md',
+  '.github/PULL_REQUEST_TEMPLATE.md',
 ]
 
 const PERSONA_NEEDLES = [

@@ -5,6 +5,7 @@
 > - 本仓库（中文项目名：**dsh插件创作**；GitHub 仓库名：`dsh-plugin-creation`，仓库名只能用 ASCII，中文名见描述与本行）主要由 **DeepSeek 模型接管创作**：需求澄清之后的设计、实现、测试与验收记录由 AI 完成，人工只做需求决策与结果确认。
 > - 作者**不具备持续更新与维护能力**：不承诺后续功能演进、兼容性跟进或问题修复；如 DSH 版本升级导致不可用，请自行调整或提 PR。
 > - 以 **MIT 许可、现状（AS IS）** 开放，欢迎 fork、复制、改造与二次发布。
+> - **接受 PR（无 SLA）**：欢迎外部贡献，但审核与合并不承诺时限；门禁、生成物与密钥规则见 [CONTRIBUTING.md](CONTRIBUTING.md)，讨论入口为 Issues / Discussions。
 
 为 DeepSeek Harness 制作**可安装、可复用**的专精子代理模式。当前首个模式：`paper-patent-scout`（论文 + 专利检索）。
 

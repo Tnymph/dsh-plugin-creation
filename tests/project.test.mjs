@@ -102,6 +102,33 @@ test('persona handles a missing AI4Scholar key and names the optional extra file
   )
 })
 
+test('contributing contract: PR accepted without SLA, gate and generated-artifact rules stated', () => {
+  const contributing = read('CONTRIBUTING.md')
+  for (const needle of [
+    '接受 PR',
+    '无 SLA',
+    'node scripts/build.mjs',
+    'node scripts/verify.mjs',
+    'node --test',
+    'cordis.patch.yml',
+    '密钥',
+    'MIT',
+  ]) {
+    assert.ok(contributing.includes(needle), `CONTRIBUTING.md missing: ${needle}`)
+  }
+  assert.ok(
+    /不允许|禁止/.test(contributing),
+    'CONTRIBUTING.md must state the forbidden actions (generated files, secrets) explicitly',
+  )
+  const template = read('.github', 'PULL_REQUEST_TEMPLATE.md')
+  for (const needle of ['verify.mjs', '生成物', '密钥', '动机', '验收']) {
+    assert.ok(template.includes(needle), `PULL_REQUEST_TEMPLATE.md missing: ${needle}`)
+  }
+  const readme = read('README.md')
+  assert.ok(readme.includes('CONTRIBUTING.md'), 'README must point contributors at CONTRIBUTING.md')
+  assert.ok(/无 SLA/.test(readme), 'README must state PR review has no SLA')
+})
+
 test('output schema is valid JSON with the record definitions we emit', () => {
   const schema = JSON.parse(read('schema', 'output.schema.json'))
   assert.ok(schema.$defs, 'schema needs $defs')
